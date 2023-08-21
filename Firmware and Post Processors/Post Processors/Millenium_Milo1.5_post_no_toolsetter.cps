@@ -99,6 +99,15 @@ var coolants = {
   off: 9
 };
 
+var wcsDefinitions = {
+  useZeroOffset: false, // set to 'true' to allow for workoffset 0, 'false' treats 0 as 1
+  wcs : [
+  {name:"Standard", format:"G", range:[54, 59]}, // standard WCS, output as G54-G59
+  // {name:"Extended", format:"G59.#", range:[1, 64]} // extended WCS, output as G59.7, etc.
+  // {name:"Extended", format:"G54 P#", range:[1, 64]} // extended WCS, output as G54 P7, etc.
+  ]
+ };
+
 
 var permittedCommentChars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,=_-";
 
@@ -579,7 +588,15 @@ function onSection() {
   writeBlock(mFormat.format(tool.clockwise ? 3 : 4), pFormat.format(0), sOutput.format(tool.spindleRPM));
   writeBlock(gFormat.format(4) + " P15000");
 
-  writeBlock(gFormat.format(56));
+  // wcs
+  if (insertToolCall) { // force work offset when changing tool
+    currentWorkOffset = undefined;
+  }
+
+  if (currentSection.workOffset != currentWorkOffset) {
+    writeBlock(currentSection.wcs);
+    currentWorkOffset = currentSection.workOffset;
+  }
 
   forceXYZ();
 
